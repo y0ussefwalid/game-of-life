@@ -133,6 +133,9 @@
   <ItemGroup>
     <ClInclude Include="game_of_life.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="logic.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
