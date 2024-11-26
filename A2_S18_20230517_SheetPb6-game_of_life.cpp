@@ -1,4 +1,4 @@
-#include"game_of_life.h"
+#include"A2_S18_20230517_SheetPb6-game_of_life.h"
 void universe::menu()
 {
 	std::string choice;
