@@ -4,21 +4,25 @@ void universe::menu()
 	std::string choice;
 	std::cout << "Welcome to the game of life\n";
 	while (true) {
+		std::cout << "\033[2J\033[H\033[3J";
 		std::cout << "please choose an option:\n";
-		std::cout << "1.initialize\n";
+		if(grid.empty())std::cout << "1.initialize\n";
+		else std::cout << "1.layout settings\n";
 		std::cout << "2.reset\n";
 		std::cout << "3.run\n";
 		std::cout << "4.exit\n";
 		display();
 		std::cout << "enter your choice: ";
 		getline(std::cin >> std::ws, choice);
-		if (choice.size() != 1) {
-			std::cout << "please enter a valid input\n";
-			continue;
+		while(choice.size() != 1) {
+			//std::cout << "\033[1A\033[0G";
+			std::cout << "[error]: please enter a valid input: ";
+			getline(std::cin >> std::ws, choice);
 		}
 		switch (choice[0])
 		{
 		case '1':
+			std::cout << "\033[2J\033[H\033[3J";
 			initialize_menu();
 			break;
 		case '2':
@@ -39,36 +43,41 @@ void universe::menu()
 
 void universe::initialize_menu()
 {
-	if (grid.empty())std::cout << "1.initialize grid size\n";
-	else {
-		std::cout << "1.change grid size[it will reset live cells]\n";
-		std::cout << "2.set live cells\n";
-	}
-	std::cout << "3.load a pattern from a file\n";
-	std::cout << "4.return\n";
-	std::string choice;
-	getline(std::cin >> std::ws, choice);
-	while (choice.size() != 1) {
-		std::cout << "please enter a valid input: ";
+	while(true){
+		if (grid.empty()) {
+			initialize();
+			continue;
+		}
+		else {
+			std::cout << "1.reinitialize grid[it will reset live cells]\n";
+			std::cout << "2.set live cells\n";
+		}
+		std::cout << "3.load a pattern from a file\n";
+		std::cout << "4.return\n";
+		std::cout << "enter your choice: ";
+		std::string choice;
 		getline(std::cin >> std::ws, choice);
-			//std::cout << "\033[2k";
-	}
-	switch (choice[0])
-	{
-	case '1':
-		initialize(1);
-		break;
-	case '2':
-		initialize(0);
-		break;
-	case '3' :
-		file_initialization();
-		break;
-	case '4':
-		return;
-	default:
-		std::cout << "invalid choice\n";
-		break;
+		while (choice.size() != 1) {
+			std::cout << "[error]:please enter a valid input: ";
+			getline(std::cin >> std::ws, choice);
+		}
+		switch (choice[0])
+		{
+		case '1':
+			initialize();
+			break;
+		case '2':
+			set_cells();
+			break;
+		case '3':
+			file_initialization();
+			break;
+		case '4':
+			return;
+		default:
+			std::cout << "[error]:invalid choice\n";
+			break;
+		}
 	}
 
 }
@@ -90,6 +99,11 @@ void universe::reset()
 }
 void universe::run()
 {
+	if (grid.empty()) {
+		std::cout << "[alert]:please initialize grid first\n";
+		std::this_thread::sleep_for(std::chrono::milliseconds(800));
+		return;
+	}
 	std::cout << "how many times you want to run: ";
 	std::string times;
 	getline(std::cin >> std::ws, times);
@@ -101,9 +115,13 @@ void universe::run()
 	int start = n;
 	std::vector<std::vector<bool>>new_grid(grid.size(), std::vector<bool>(grid[0].size(),0));
 	while (n--) {
+		std::cout << "\033[2J\033[H\033[3J";
+		display();
+		std::this_thread::sleep_for(std::chrono::milliseconds(800));
 		next_generation(new_grid);
+		grid = new_grid;
 	}
-	grid = new_grid;
+	//grid = new_grid;
 }
 void universe::next_generation(std::vector<std::vector<bool>>& new_grid) {
 	for (int i = 0; i < grid.size(); ++i) {
@@ -175,21 +193,23 @@ void universe::display()
 }
 
 
-void universe::initialize(bool size)
+void universe::initialize()
 {
-	if (size) {
-		std::cout << "Please choose one of the following size options: \n";
-		std::cout << "1. 20x20\n";
-		std::cout << "2. 30x30\n";
-		std::cout << "3. 20x50\n";
-		std::string choice;
+	std::cout << "Please choose one of the following size options: \n";
+	std::cout << "1. 20x20\n";
+	std::cout << "2. 30x30\n";
+	std::cout << "3. 20x50\n";
+	std::cout << "4. return\n";
+	std::cout << "please enter your choice: ";
+	std::string choice;
+	getline(std::cin >> std::ws, choice);
+	while(choice.size() != 1) {
+		std::cout << "please enter a valid input: ";
 		getline(std::cin >> std::ws, choice);
-		while(choice.size() != 1) {
-			std::cout << "please enter a valid input: ";
-			getline(std::cin >> std::ws, choice);
-			//std::cout << "\033[2k";
-		}
-		int rows, cols;
+		//std::cout << "\033[2k";
+	}
+	int rows = 0, cols = 0;
+	while(!rows){
 		switch (choice[0]) {
 		case '1':
 			rows = 20;
@@ -203,15 +223,25 @@ void universe::initialize(bool size)
 			rows = 20;
 			cols = 50;
 			break;
-		}
-		grid.resize(rows);
-		for (int i = 0; i < grid.size(); ++i) {
-			grid[i].resize(cols);
-			std::fill(grid[i].begin(), grid[i].end(), 0);
+		case '4':
+			return;
+		default:
+			std::cout << "[error]: please enter a valid choice: ";
+			getline(std::cin >> std::ws, choice);
 		}
 	}
+	grid.resize(rows);
+	for (int i = 0; i < grid.size(); ++i) {
+		grid[i].resize(cols);
+		std::fill(grid[i].begin(), grid[i].end(), 0);
+	}
+}
+
+void universe::set_cells()
+{
 	std::cout << "1.manually set live cells\n";
 	std::cout << "2.enter a percentage of live cells you want\n";
+	std::cout << "3.return\n";
 	std::cout << "please enter your choice: ";
 	std::string choice;
 	getline(std::cin >> std::ws, choice);
@@ -221,18 +251,20 @@ void universe::initialize(bool size)
 	}
 	if (choice[0] == '1') {
 		while (true) {
+			std::cout << "\033[2J\033[H\033[3J";
+			display();
 			std::cout << "if a cell is dead it will be alive and vise versa\n";
-			std::cout << "enter the cell you wan[enter 0 to return]t\n";
+			std::cout << "enter the cell you wan[enter '0' to return]\n";
 			std::cout << "row:";
 			std::string row;
 			getline(std::cin >> std::ws, row);
 			if (!is_valid(row)) {
-				std::cout << "invalid input\n";
+				std::cout << "[error]invalid input\n";
 				continue;
 			}
 			int r = stoi(row);
 			if (r > grid.size()) {
-				std::cout << "out of range\n";
+				std::cout << "[error]:out of range\n";
 				continue;
 			}
 			else if (!r) return;
@@ -240,21 +272,23 @@ void universe::initialize(bool size)
 			std::string coloumn;
 			getline(std::cin >> std::ws, coloumn);
 			if (!is_valid(coloumn)) {
-				std::cout << "invalid input\n";
+				std::cout << "[error]:invalid input\n";
 				continue;
 			}
 			int col = stoi(coloumn);
-			if (col > grid[0].size()) {
-				std::cout << "out of range\n";
+			if (col > grid[0].size()|| !col) {
+				std::cout << "[error]:out of range\n";
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				continue;
 			}
-			grid[r-1][col-1] = !grid[r][col];
+			grid[r - 1][col - 1] = !grid[r-1][col-1];
 		}
 	}
 	else if (choice[0] == '2') {
 		return;
 	}
-
+	else if (choice[0] == '3') return;
+	else std::cout << "[error]:invalid choice\n";
 }
 
 void universe::file_initialization()
@@ -302,5 +336,6 @@ void universe::file_initialization()
 		int col = i % w;
 		grid[row][col] = (pattern[i] == '1' ? 1 : 0);
 	}
+	file.close();
 }
 
