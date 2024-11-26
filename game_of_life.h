@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <thread>
 #include <chrono>
+#include <set>
 class universe {
 private:
 	std::vector<std::vector<bool>> grid;

@@ -34,7 +34,8 @@ void universe::menu()
 		case '4':
 			return;
 		default:
-			std::cout << "invalid choice\n";
+			std::cout << "[error]: Please choose a number between 1-4\n";
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			break;
 		}
 
@@ -50,7 +51,7 @@ void universe::initialize_menu()
 		}
 		else {
 			std::cout << "1.reinitialize grid[it will reset live cells]\n";
-			std::cout << "2.set live cells\n";
+			std::cout << "2.set live cells[it will clear live cells before setting]\n";
 		}
 		std::cout << "3.load a pattern from a file\n";
 		std::cout << "4.return\n";
@@ -75,7 +76,7 @@ void universe::initialize_menu()
 		case '4':
 			return;
 		default:
-			std::cout << "[error]:invalid choice\n";
+			std::cout << "\n[error]:invalid choice\n";
 			break;
 		}
 	}
@@ -114,12 +115,17 @@ void universe::run()
 	int n = stoi(times);
 	int start = n;
 	std::vector<std::vector<bool>>new_grid(grid.size(), std::vector<bool>(grid[0].size(),0));
-	while (n--) {
+	std::cout << "\033[2J\033[H\033[3J";
+	std::cout << "generation: " << 0 << '\n';
+	display();
+	std::this_thread::sleep_for(std::chrono::milliseconds(800));
+	for (int i = 0; i < n;++i ) {
 		std::cout << "\033[2J\033[H\033[3J";
+		next_generation(new_grid);
+		std::cout << "generation: " << i+1 << '\n';
+		grid = new_grid;
 		display();
 		std::this_thread::sleep_for(std::chrono::milliseconds(800));
-		next_generation(new_grid);
-		grid = new_grid;
 	}
 	//grid = new_grid;
 }
@@ -186,7 +192,13 @@ void universe::display()
 	for (i = 0; i < grid.size(); ++i) {
 		std::cout << std::setw(2) <<std::left << i + 1 << " |";
 		for (int j = 0; j < grid[0].size(); ++j) {
-			std::cout << std::setw(3) << std::left << grid[i][j];
+			/*std::cout << std::setw(3) << std::left << (grid[i][j] ? "\033[32m*" : "\033[31m.\033[0m");*/
+			if (grid[i][j]) {
+				std::cout << "\033[32m" << std::setw(3) << std::left << '*' << "\033[0m";
+			}
+			else {
+				std::cout << "\033[31m" << std::setw(3) << std::left << '.' << "\033[0m";
+			}
 		}
 		std::cout << '\n';
 	}
@@ -285,7 +297,30 @@ void universe::set_cells()
 		}
 	}
 	else if (choice[0] == '2') {
-		return;
+		reset();
+		double per = 0;
+		int n = 0;
+		while (!per) {
+			std::cout << "Please enter the percentage you want: ";
+			std::string num;
+			getline(std::cin >> std::ws, num);
+			if (is_valid(num) && stoi(num) <= 100) per = stoi(num);
+			else "[error]:invalid input\n";
+		}
+		srand(time(NULL));
+		n = grid.size() * grid[0].size();
+		int limit = n * (per / 100);
+		std::set<int> nums;
+		while (nums.size() < limit) {
+			int num = (rand() % n);
+			nums.insert(num);
+		}
+		int cols = grid[0].size();
+		for (auto& num : nums) {
+			int row = num / cols;
+			int col = num % cols;
+			grid[row][col] = 1;
+		}
 	}
 	else if (choice[0] == '3') return;
 	else std::cout << "[error]:invalid choice\n";
