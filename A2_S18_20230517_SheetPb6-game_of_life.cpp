@@ -120,6 +120,7 @@ void universe::run()
 		return;
 	}
 	int n = stoi(times);
+	//creating a new grid and filling it with zeros
 	std::vector<std::vector<bool>>new_grid(grid.size(), std::vector<bool>(grid[0].size(),0));
 	//clearing the console before each output to make the output clear for the user
 	std::cout << "\033[2J\033[H\033[3J";
