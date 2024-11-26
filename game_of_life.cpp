@@ -53,7 +53,7 @@ void universe::initialize_menu()
 		// making the user initialize before doing anything else in the layout 
 		if (grid.empty()) {
 			initialize();
-			continue;
+			return;
 		}
 		//after initializing the user will be able to access everything
 		else {
@@ -116,6 +116,7 @@ void universe::run()
 	//to check if it is a valid number and postive
 	if (!is_valid(times)) {
 		std::cout << "[error]:please enter a number\n";
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		return;
 	}
 	int n = stoi(times);
@@ -133,7 +134,7 @@ void universe::run()
 		std::cout << "generation: " << i+1 << '\n';
 		grid = new_grid;
 		display();
-		std::this_thread::sleep_for(std::chrono::milliseconds(800));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 }
 //applying the rules of the game of life on the new_grid vector using the original grid
